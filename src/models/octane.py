@@ -9,7 +9,9 @@ from .base import Base
 class Octane(Base):
     __tablename__ = "dim_octanes"
 
-    id: Mapped[Optional[int]] = mapped_column(Integer, primary_key=True, index=True, autoincrement=True, nullable=False)
+    id: Mapped[Optional[int]] = mapped_column(
+        Integer, primary_key=True, index=True, autoincrement=True, nullable=False
+    )
     grade: Mapped[int] = mapped_column(Integer)
 
     refills = relationship("Refill", back_populates="brand")

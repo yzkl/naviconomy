@@ -10,6 +10,7 @@ class RefillBase(BaseModel):
     liters_filled: float
     brand_id: int
     octane_id: int
+    ethanol_percent: float
     cost: float
 
     model_config = ConfigDict(from_attributes=True, strict=True)
@@ -24,6 +25,7 @@ class RefillUpdate(RefillBase):
     liters_filled: Optional[float] = None
     brand_id: Optional[int] = None
     octane_id: Optional[int] = None
+    ethanol_percent: Optional[float] = None
     cost: Optional[float] = None
 
 
