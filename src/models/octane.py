@@ -14,4 +14,4 @@ class Octane(Base):
     )
     grade: Mapped[int] = mapped_column(Integer)
 
-    refills = relationship("Refill", back_populates="brand")
+    refills = relationship("Refill", back_populates="octane")
