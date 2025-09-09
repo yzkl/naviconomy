@@ -21,7 +21,7 @@ async def create_brand(params: BrandCreate, session: AsyncSession) -> Brand:
 
 
 async def find_brand(id: int, session: AsyncSession) -> models.Brand:
-    db_brand = session.get(models.Brand, id)
+    db_brand = await session.get(models.Brand, id)
     if not db_brand:
         raise EntityDoesNotExistError(f"Brand with id {id} does not exist.")
     return db_brand
