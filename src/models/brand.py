@@ -15,4 +15,3 @@ class Brand(Base):
     name: Mapped[str] = mapped_column(String(32), unique=True)
 
     refills = relationship("Refill", back_populates="brand")
-    
