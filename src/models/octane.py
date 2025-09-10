@@ -12,6 +12,6 @@ class Octane(Base):
     id: Mapped[Optional[int]] = mapped_column(
         Integer, primary_key=True, index=True, autoincrement=True, nullable=False
     )
-    grade: Mapped[int] = mapped_column(Integer)
+    grade: Mapped[int] = mapped_column(Integer, unique=True)
 
     refills = relationship("Refill", back_populates="octane")
