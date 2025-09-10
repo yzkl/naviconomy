@@ -60,4 +60,4 @@ async def delete_octane(id: int, session: AsyncSession) -> Octane:
     db_octane = await find_octane(id, session)
     await session.delete(db_octane)
     await session.commit()
-    return Octane.model_dump(db_octane)
+    return Octane.model_validate(db_octane)
