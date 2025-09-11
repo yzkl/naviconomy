@@ -40,7 +40,7 @@ async def read_refills(session: AsyncSession) -> List[Refill]:
 
 
 async def update_refill(id: int, params: RefillUpdate, session: AsyncSession) -> Refill:
-    db_refill = find_refill(id, session)
+    db_refill = await find_refill(id, session)
     for attr, value in params.model_dump(exclude_unset=True).items():
         setattr(db_refill, attr, value)
     session.add(db_refill)
@@ -50,7 +50,7 @@ async def update_refill(id: int, params: RefillUpdate, session: AsyncSession) ->
 
 
 async def delete_refill(id: int, session: AsyncSession) -> Refill:
-    db_refill = find_refill(id, session)
+    db_refill = await find_refill(id, session)
     await session.delete(db_refill)
     await session.commit()
     return Refill.model_validate(db_refill)
