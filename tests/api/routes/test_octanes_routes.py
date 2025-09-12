@@ -133,3 +133,21 @@ async def test_update_octane_regular(
     response = await async_client.put(URL_PREFIX + "1", json={"grade": 97})
 
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_delete_octane_returns_http_422(async_client: AsyncClient) -> None:
+    response = await async_client.delete(URL_PREFIX + "false")
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_delete_regular(
+    testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    # Seed test octanes
+    await setup(testing_session)
+
+    response = await async_client.delete(URL_PREFIX + "2")
+
+    assert response.status_code == 200
