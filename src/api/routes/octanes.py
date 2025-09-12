@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import APIRouter, Depends, Request
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,4 +20,26 @@ async def create_octane(
     logger.info(f"Creating octane: {params}.")
     result = await octanes.create_octane(params, db)
     logger.info(f"Created octane: {result}.")
+    return result
+
+
+@router.get("/{id}", response_model=Octane)
+@limiter.limit("60/minute")
+async def read_octane(
+    request: Request, id: int, db: AsyncSession = Depends(get_db_session)
+) -> Octane:
+    logger.info(f"Fetching octane with id: {id}.")
+    result = await octanes.read_octane(id, db)
+    logger.info(f"Fetched octane: {result}.")
+    return result
+
+
+@router.get("/", response_model=List[Octane])
+@limiter.limit("60/minute")
+async def read_octanes(
+    request: Request, db: AsyncSession = Depends(get_db_session)
+) -> List[Octane]:
+    logger.info("Fetching octanes.")
+    result = await octanes.read_octanes(db)
+    logger.info("Fetched octanes.")
     return result
