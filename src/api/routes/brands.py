@@ -23,7 +23,7 @@ async def create_brand(
     return result
 
 
-@router.get("/{id}", respose_model=Brand)
+@router.get("/{id}", response_model=Brand)
 @limiter.limit("60/minute")
 async def read_brand(
     request: Request, id: int, db: AsyncSession = Depends(get_db_session)
