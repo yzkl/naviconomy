@@ -1,4 +1,5 @@
 from datetime import date, timedelta
+from decimal import Decimal
 
 import pytest
 from pydantic import ValidationError
@@ -125,7 +126,7 @@ async def test_create_fill_regular(testing_session: AsyncSession) -> None:
     assert result.liters_filled == 3.5
     assert result.brand_id == 1
     assert result.octane_id == 1
-    assert round(result.ethanol_percent, 2) == 0.12
+    assert result.ethanol_percent == 0.12
     assert result.cost == 175
 
 
@@ -152,7 +153,7 @@ async def test_find_refill_regular(
     assert result.liters_filled == 3.5
     assert result.brand_id == 1
     assert result.octane_id == 1
-    assert round(result.ethanol_percent, 1) == 0.1
+    assert result.ethanol_percent == Decimal("0.1")
     assert result.cost == 175
 
 
@@ -183,16 +184,16 @@ async def test_find_refills_regular(
     assert result[0].liters_filled == 3.5
     assert result[0].brand_id == 1
     assert result[0].octane_id == 1
-    assert round(result[0].ethanol_percent, 1) == 0.1
+    assert result[0].ethanol_percent == Decimal("0.1")
     assert result[0].cost == 175
     assert isinstance(result[1], models.Refill)
     assert result[1].id == 2
     assert result[1].fill_date == date.today() + timedelta(days=1)
-    assert round(result[1].odometer, 1) == 456.7
-    assert round(result[1].liters_filled, 1) == 3.7
+    assert result[1].odometer == Decimal("456.7")
+    assert result[1].liters_filled == Decimal("3.7")
     assert result[1].brand_id == 1
     assert result[1].octane_id == 2
-    assert round(result[1].ethanol_percent, 1) == 0.0
+    assert result[1].ethanol_percent == 0.0
     assert result[1].cost == 200.5
 
 
@@ -217,7 +218,7 @@ async def test_read_refill_regular(testing_session: AsyncSession) -> None:
     assert result.liters_filled == 3.5
     assert result.brand_id == 1
     assert result.octane_id == 1
-    assert round(result.ethanol_percent, 1) == 0.1
+    assert result.ethanol_percent == 0.1
     assert result.cost == 175
 
 
@@ -248,16 +249,16 @@ async def test_read_refills_regular(
     assert result[0].liters_filled == 3.5
     assert result[0].brand_id == 1
     assert result[0].octane_id == 1
-    assert round(result[0].ethanol_percent, 1) == 0.1
+    assert result[0].ethanol_percent == 0.1
     assert result[0].cost == 175
     assert isinstance(result[1], Refill)
     assert result[1].id == 2
     assert result[1].fill_date == date.today() + timedelta(days=1)
-    assert round(result[1].odometer, 1) == 456.7
-    assert round(result[1].liters_filled, 1) == 3.7
+    assert result[1].odometer == 456.7
+    assert result[1].liters_filled == 3.7
     assert result[1].brand_id == 1
     assert result[1].octane_id == 2
-    assert round(result[1].ethanol_percent, 1) == 0.0
+    assert result[1].ethanol_percent == 0.0
     assert result[1].cost == 200.5
 
 
@@ -342,11 +343,11 @@ async def test_update_refill_regular(
     assert result.id == 2
     assert result.fill_date == date.today() + timedelta(days=1)
     assert result.odometer == 789
-    assert round(result.liters_filled, 1) == 3.7
+    assert result.liters_filled == 3.7
     assert result.brand_id == 2
     assert result.octane_id == 2
-    assert round(result.ethanol_percent, 2) == 0.05
-    assert round(result.cost, 1) == 200.5
+    assert result.ethanol_percent == 0.05
+    assert result.cost == 200.5
 
 
 @pytest.mark.asyncio
@@ -372,7 +373,7 @@ async def test_delete_refill_regular(
     assert result.liters_filled == 3.5
     assert result.brand_id == 1
     assert result.octane_id == 1
-    assert round(result.ethanol_percent, 1) == 0.1
+    assert result.ethanol_percent == 0.1
     assert result.cost == 175
 
     assert len(table_contents) == 1
