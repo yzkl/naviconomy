@@ -57,3 +57,14 @@ async def update_octane(
     result = await octanes.update_octane(id, params, db)
     logger.info(f"Updated octane: {result}.")
     return result
+
+
+@router.delete("/{id}", response_model=Octane)
+@limiter.limit("60/minute")
+async def delete_octane(
+    request: Request, id: int, db: AsyncSession = Depends(get_db_session)
+) -> None:
+    logger.info(f"Deleting octane with id: {id}.")
+    result = await octanes.delete_octane(id, db)
+    logger.info(f"Deleted octane: {result}.")
+    return result
