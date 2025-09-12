@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.limiter import limiter
 from crud import octanes
 from database.session import get_db_session
-from schemas import Octane, OctaneCreate
+from schemas import Octane, OctaneCreate, OctaneUpdate
 
 router = APIRouter(prefix="/octane")
 
@@ -42,4 +42,18 @@ async def read_octanes(
     logger.info("Fetching octanes.")
     result = await octanes.read_octanes(db)
     logger.info("Fetched octanes.")
+    return result
+
+
+@router.put("/{id}", response_model=Octane)
+@limiter.limit("60/minute")
+async def update_octane(
+    request: Request,
+    id: int,
+    params: OctaneUpdate,
+    db: AsyncSession = Depends(get_db_session),
+) -> Octane:
+    logger.info(f"Updating octane with id: {id}.")
+    result = await octanes.update_octane(id, params, db)
+    logger.info(f"Updated octane: {result}.")
     return result
