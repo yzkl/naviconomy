@@ -169,3 +169,114 @@ async def test_read_refills(
     await setup(testing_session)
     response = await async_client.get(URL_PREFIX)
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_id(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "false")
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_fill_date(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "1", json={"fill_date": "yesterday"})
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_odometer(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "1", json={"odometer": "1000 km"})
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_liters_filled(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(
+        URL_PREFIX + "1", json={"odometer": 1000, "liters_filled": "a gallon"}
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_brand_id(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(
+        URL_PREFIX + "1",
+        json={"odometer": 1000, "liters_filled": 3.5, "brand_id": "true"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_octane_id(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(
+        URL_PREFIX + "1",
+        json={"odometer": 1000, "liters_filled": 3.5, "brand_id": 1, "octane_id": "1"},
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_ethanol_percent(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(
+        URL_PREFIX + "1",
+        json={
+            "odometer": 1000,
+            "liters_filled": 3.5,
+            "brand_id": 1,
+            "octane_id": 1,
+            "ethanol_percent": "5%",
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_422_for_improper_cost(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(
+        URL_PREFIX + "1",
+        json={
+            "odometer": 1000,
+            "liters_filled": 3.5,
+            "brand_id": 1,
+            "octane_id": 1,
+            "ethanol_percent": 0.5,
+            "cost": "a dime",
+        },
+    )
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_update_refill_regular(
+    testing_session: AsyncSession,
+    async_client: AsyncClient,
+) -> None:
+    await setup(testing_session)
+    response = await async_client.put(
+        URL_PREFIX + "1",
+        json={
+            "odometer": 1000,
+            "liters_filled": 3.5,
+            "brand_id": 1,
+            "octane_id": 1,
+            "ethanol_percent": 0.5,
+            "cost": 150,
+        },
+    )
+    assert response.status_code == 200
