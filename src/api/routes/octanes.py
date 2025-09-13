@@ -9,7 +9,7 @@ from crud import octanes
 from database.session import get_db_session
 from schemas import Octane, OctaneCreate, OctaneUpdate
 
-router = APIRouter(prefix="/octane")
+router = APIRouter(prefix="/octanes")
 
 
 @router.post("/", response_model=Octane)

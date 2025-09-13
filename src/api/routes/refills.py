@@ -9,7 +9,7 @@ from crud import refills
 from database.session import get_db_session
 from schemas import Refill, RefillCreate, RefillUpdate
 
-router = APIRouter(prefix="/refill")
+router = APIRouter(prefix="/refills")
 
 
 @router.post("/", response_model=Refill)

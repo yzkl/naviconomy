@@ -9,7 +9,7 @@ from crud import brands
 from database.session import get_db_session
 from schemas import Brand, BrandCreate, BrandUpdate
 
-router = APIRouter(prefix="/brand")
+router = APIRouter(prefix="/brands")
 
 
 @router.post("/", response_model=Brand)
