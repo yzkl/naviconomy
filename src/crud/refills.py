@@ -1,18 +1,28 @@
 from typing import List
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
-from exceptions.exceptions import EntityDoesNotExistError
+from exceptions.exceptions import (
+    EntityDoesNotExistError,
+    RelatedEntityDoesNotExistError,
+)
 from schemas import Refill, RefillCreate, RefillUpdate
 
 
 async def create_refill(params: RefillCreate, session: AsyncSession) -> Refill:
     db_refill = models.Refill(**params.model_dump())
     session.add(db_refill)
-    await session.commit()
-    await session.refresh(db_refill)
+    try:
+        await session.commit()
+        await session.refresh(db_refill)
+    except IntegrityError as e:
+        if "brand" in str(e.orig):
+            raise RelatedEntityDoesNotExistError("Brand with this id does not exist.")
+        elif "octane" in str(e.orig):
+            raise RelatedEntityDoesNotExistError("Octane with this id does not exist.")
     return Refill.model_validate(db_refill)
 
 
