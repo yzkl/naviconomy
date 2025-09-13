@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
-from api.routes import brands, octanes
+from api.routes import brands, octanes, refills
 from database.session import get_db_session
 from models import Base
 
@@ -19,6 +19,7 @@ from models import Base
 test_app = FastAPI()
 test_app.include_router(brands.router)
 test_app.include_router(octanes.router)
+test_app.include_router(refills.router)
 
 
 DATABASE_URL = "postgresql+asyncpg://postgres:strongpassword@localhost:5431/postgres"
