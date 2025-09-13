@@ -27,6 +27,12 @@ class EntityDoesNotExistError(NaviconomyApiError):
     pass
 
 
+class RelatedEntityDoesNotExistError(NaviconomyApiError):
+    """Related entity not found."""
+
+    pass
+
+
 class RegistrationFailed(NaviconomyApiError):
     """Registration failed."""
 
