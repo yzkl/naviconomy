@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.limiter import limiter
 from crud import refills
 from database.session import get_db_session
-from schemas import Refill, RefillCreate
+from schemas import Refill, RefillCreate, RefillUpdate
 
 router = APIRouter(prefix="/refill")
 
@@ -42,4 +42,18 @@ async def read_refills(
     logger.info("Fetching refills.")
     result = await refills.read_refills(db)
     logger.info("Fetched refills.")
+    return result
+
+
+@router.put("/{id}", response_model=Refill)
+@limiter.limit("60/minute")
+async def update_refill(
+    request: Request,
+    id: int,
+    params: RefillUpdate,
+    db: AsyncSession = Depends(get_db_session),
+) -> Refill:
+    logger.info(f"Updating refill with id: {id}.")
+    result = await refills.update_refill(id, params, db)
+    logger.info(f"Updated refill: {result}.")
     return result
