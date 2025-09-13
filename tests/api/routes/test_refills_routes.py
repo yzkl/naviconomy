@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 
-URL_PREFIX = "/refill/"
+URL_PREFIX = "/v1/refills/"
 
 
 async def setup_dimension_tables(async_session: AsyncSession) -> None:

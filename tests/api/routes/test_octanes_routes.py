@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 
-URL_PREFIX = "/octane/"
+URL_PREFIX = "/v1/octanes/"
 
 
 async def setup(async_session: AsyncSession) -> None:
