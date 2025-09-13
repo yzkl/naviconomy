@@ -145,3 +145,27 @@ async def test_create_refill_regular(
         },
     )
     assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_refill_returns_http_422(async_client: AsyncClient) -> None:
+    response = await async_client.get(URL_PREFIX + "not id")
+    assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_read_refill_regular(
+    testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup(testing_session)
+    response = await async_client.get(URL_PREFIX + "1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_refills(
+    testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup(testing_session)
+    response = await async_client.get(URL_PREFIX)
+    assert response.status_code == 200
