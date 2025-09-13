@@ -7,7 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
 from crud import refills
-from exceptions.exceptions import EntityDoesNotExistError
+from exceptions.exceptions import (
+    EntityDoesNotExistError,
+    RelatedEntityDoesNotExistError,
+)
 from schemas import Refill, RefillCreate, RefillUpdate
 
 
@@ -104,7 +107,44 @@ async def test_create_refill_raises_ValidationError(
 
 
 @pytest.mark.asyncio
-async def test_create_fill_regular(testing_session: AsyncSession) -> None:
+async def test_create_refill_raises_RelatedEntityDoesNotExistError_for_improper_brand_id(
+    testing_session: AsyncSession,
+) -> None:
+    with pytest.raises(RelatedEntityDoesNotExistError, match="Brand"):
+        await refills.create_refill(
+            RefillCreate(
+                odometer=123,
+                liters_filled=1.23,
+                brand_id=1,
+                octane_id=1,
+                ethanol_percent=0.1,
+                cost=200.5,
+            ),
+            testing_session,
+        )
+
+
+@pytest.mark.asyncio
+async def test_create_refill_raises_RelatedEntityDoesNotExistError_for_improper_octane_id(
+    testing_session: AsyncSession,
+) -> None:
+    await setup_dimension_tables(testing_session)
+    with pytest.raises(RelatedEntityDoesNotExistError, match="Octane"):
+        await refills.create_refill(
+            RefillCreate(
+                odometer=123,
+                liters_filled=1.23,
+                brand_id=1,
+                octane_id=1000,
+                ethanol_percent=0.1,
+                cost=200.5,
+            ),
+            testing_session,
+        )
+
+
+@pytest.mark.asyncio
+async def test_create_refill_regular(testing_session: AsyncSession) -> None:
     await setup_dimension_tables(testing_session)
 
     result = await refills.create_refill(
