@@ -57,3 +57,14 @@ async def update_refill(
     result = await refills.update_refill(id, params, db)
     logger.info(f"Updated refill: {result}.")
     return result
+
+
+@router.delete("/{id}", response_model=Refill)
+@limiter.limit("60/minute")
+async def delete_refill(
+    request: Request, id: int, db: AsyncSession = Depends(get_db_session)
+) -> Refill:
+    logger.info(f"Deleting refill with id: {id}.")
+    result = await refills.delete_refill(id, db)
+    logger.info(f"Deleted refill: {result}.")
+    return result
