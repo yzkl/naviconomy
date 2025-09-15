@@ -1,5 +1,14 @@
+from datetime import datetime, timedelta, timezone
+from typing import Callable
+
+import jwt
 from bcrypt import checkpw, gensalt, hashpw
 from pydantic import SecretStr
+
+from config.settings import settings
+
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
 
 
 def get_password_hash(password: SecretStr) -> str:
@@ -44,3 +53,35 @@ def verify_password(plain_password: SecretStr, hashed_password: str) -> bool:
         )
     except (TypeError, ValueError):
         return False
+
+
+def create_access_token(
+    data: dict,
+    expires_delta: timedelta | None = None,
+    now_fn: Callable[[], datetime] = lambda: datetime.now(timezone.utc),
+) -> str:
+    """Create a JSON Web Token (JWT) signed with the project's secret key and algorithm.
+
+    If no expiration interval is provided, the token will expire 15 minutes after creation.
+    The token's expiration timestamp is generated in UTC.
+
+    Parameters
+    ----------
+    data : dict
+        The data to encode into the JWT. This will be copied and updated with an expiration timestamp.
+
+    expires_delta : timedelta, optional
+        Time until the token expires. Defaults to 15 minutes.
+
+    now_fn : Callable[[], datetime], optional
+        Function that returns the current UTC time. Defaults to `datetime.now(timezone.utc)`.
+        Primarily intended for testing purposes, allowing for the injection of a fixed time for deterministic token outputs.
+    """
+    to_encode = data.copy()
+    now = now_fn()
+    expire = now + (expires_delta or timedelta(minutes=15))
+    to_encode.update({"exp": expire})
+    encoded_token = jwt.encode(
+        to_encode, SECRET_KEY.get_secret_value(), ALGORITHM.get_secret_value()
+    )
+    return encoded_token
