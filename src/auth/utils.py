@@ -2,7 +2,7 @@ from bcrypt import gensalt, hashpw
 from pydantic import SecretStr
 
 
-async def get_password_hash(password: SecretStr) -> str:
+def get_password_hash(password: SecretStr) -> str:
     """Generate a bcrpyt hash from a password.
 
     A random salt is automatically generated and applied during hasing.
