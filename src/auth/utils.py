@@ -38,7 +38,7 @@ def verify_password(plain_password: SecretStr, hashed_password: str) -> bool:
         True if the password matches the hash, False otherwise.
     """
     try:
-        checkpw(
+        return checkpw(
             plain_password.get_secret_value().encode(),
             hashed_password.encode(),
         )
