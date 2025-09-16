@@ -14,6 +14,7 @@ TEST_DATA = {
         "password": "weakpassword",
     },
 }
+TEST_DATA["token_payload"] = {"sub": TEST_DATA["username"]}
 
 
 @pytest.fixture
