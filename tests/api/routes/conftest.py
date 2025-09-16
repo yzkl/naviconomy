@@ -36,9 +36,13 @@ async def testing_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, N
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
+        # Restart table id sequences to 1 after each test
         for table in Base.metadata.tables.values():
-            seq = f"{table.name}_id_seq"
-            await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
+            if (
+                table.name != "users"
+            ):  # Exclude the `users` table from being resequenced
+                seq = f"{table.name}_id_seq"
+                await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
 
     async_session = async_sessionmaker(
         bind=engine, expire_on_commit=False, class_=AsyncSession

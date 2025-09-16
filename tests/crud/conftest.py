@@ -33,8 +33,9 @@ async def testing_session(engine: AsyncEngine):
 
         # ✅ Reset sequences so IDs always start from 1
         for table in Base.metadata.tables.values():
-            seq = f"{table.name}_id_seq"
-            await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
+            if table.name != "users":
+                seq = f"{table.name}_id_seq"
+                await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
 
     async_session = async_sessionmaker(
         bind=engine, expire_on_commit=False, class_=AsyncSession
