@@ -1,11 +1,19 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
+import pytest
 from bcrypt import checkpw
 from pydantic import SecretStr
 
-from auth.utils import create_access_token, get_password_hash, verify_password
+from auth.models import TokenData
+from auth.utils import (
+    create_access_token,
+    get_password_hash,
+    verify_password,
+    verify_token,
+)
 from config.settings import settings
+from exceptions.exceptions import InvalidTokenError
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
@@ -88,3 +96,33 @@ def test_create_access_token_preserves_payload(testing_data) -> None:
 
     for key in testing_data["token_payload"]:
         assert decoded[key] == testing_data["token_payload"][key]
+
+
+def test_verify_token_raises_InvalidTokenError_for_invalid_token() -> None:
+    invalid_token = "not a token"
+    with pytest.raises(InvalidTokenError):
+        verify_token(invalid_token)
+
+
+def test_verify_token_raises_InvalidTokenError_for_expired_token(testing_data) -> None:
+    expired_token = create_access_token(
+        testing_data["token_payload"], now_fn=lambda: datetime(2025, 1, 1)
+    )
+    with pytest.raises(InvalidTokenError):
+        verify_token(expired_token)
+
+
+def test_verify_token_raises_InvalidTokenError_for_missing_sub_claim() -> None:
+    test_payload = {"role": "admin"}
+    missing_claim_token = create_access_token(test_payload)
+    with pytest.raises(InvalidTokenError):
+        verify_token(missing_claim_token)
+
+
+# @patch("auth.utils.SECRET_KEY")
+def test_verify_token_regular(testing_data) -> None:
+    token = create_access_token(testing_data["token_payload"])
+    verified = verify_token(token)
+
+    assert isinstance(verified, TokenData)
+    assert verified.username == testing_data["token_payload"]["sub"]
