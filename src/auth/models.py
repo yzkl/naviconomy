@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import uuid4
 
 from pydantic import BaseModel, ConfigDict, EmailStr, SecretStr
 from sqlalchemy import Boolean, DateTime, String
@@ -13,7 +14,7 @@ class DBUser(Base):
     __tablename__ = "users"
 
     id: Mapped[Optional[UUID]] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, index=True, nullable=False
+        UUID(as_uuid=True), primary_key=True, index=True, nullable=False, default=uuid4
     )
     username: Mapped[str] = mapped_column(String(32), unique=True)
     email: Mapped[str] = mapped_column(String(64), unique=True)
