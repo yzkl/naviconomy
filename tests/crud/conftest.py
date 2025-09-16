@@ -1,3 +1,5 @@
+from typing import AsyncGenerator
+
 import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
@@ -11,15 +13,9 @@ from models import Base
 
 DATABASE_URL = "postgresql+asyncpg://postgres:strongpassword@localhost:5431/postgres"
 
-# Engine and sessionmaker
-# engine = create_async_engine(DATABASE_URL, future=True, echo=True)
-# AsyncTestingSessionLocal = async_sessionmaker(
-#     bind=engine, expire_on_commit=False, class_=AsyncSession
-# )
-
 
 @pytest_asyncio.fixture(scope="function")
-async def engine():
+async def engine() -> AsyncGenerator[AsyncEngine, None]:
     engine = create_async_engine(DATABASE_URL, future=True, echo=True)
     yield engine
     await engine.dispose()
