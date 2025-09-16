@@ -110,10 +110,14 @@ def verify_token(token: str) -> TokenData:
         If the token is invalid, expired, or missing a `sub` claim.
     """
     try:
-        payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            jwt=token,
+            key=SECRET_KEY.get_secret_value(),
+            algorithms=[ALGORITHM.get_secret_value()],
+        )
         username = payload.get("sub")
     except jwt.PyJWTError:
         raise InvalidTokenError("Invalid or expired token.")
     if not username:
         raise InvalidTokenError("Missing a 'sub' claim in token.")
-    return TokenData(username)
+    return TokenData(username=username)
