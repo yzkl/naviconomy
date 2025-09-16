@@ -5,7 +5,9 @@ import jwt
 from bcrypt import checkpw, gensalt, hashpw
 from pydantic import SecretStr
 
+from auth.models import TokenData
 from config.settings import settings
+from exceptions.exceptions import InvalidTokenError
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
@@ -85,3 +87,33 @@ def create_access_token(
         to_encode, SECRET_KEY.get_secret_value(), ALGORITHM.get_secret_value()
     )
     return encoded_token
+
+
+def verify_token(token: str) -> TokenData:
+    """Verify and decode a JSON Web Token (JWT) using the project's secret key and algorithm.
+
+    Returns a `TokenData` pydantic model containing the username extracted from the token.
+
+    Parameters
+    ----------
+    token : str
+        The JWT to verify and decode.
+
+    Returns
+    -------
+    TokenData
+        A pydantic model containing the data extracted from the token's `sub` claim.
+
+    Raises
+    ------
+    InvalidTokenError
+        If the token is invalid, expired, or missing a `sub` claim.
+    """
+    try:
+        payload = jwt.decode(jwt=token, key=SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+    except jwt.PyJWTError:
+        raise InvalidTokenError("Invalid or expired token.")
+    if not username:
+        raise InvalidTokenError("Missing a 'sub' claim in token.")
+    return TokenData(username)
