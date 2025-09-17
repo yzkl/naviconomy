@@ -1,11 +1,17 @@
 import pytest
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.models import DBUser, RegisterUserRequest, User
-from auth.services import authenticate_user, get_user_by_username, register_user
+from auth.models import DBUser, RegisterUserRequest, Token, User
+from auth.services import (
+    authenticate_user,
+    get_user_by_username,
+    login_for_access_token,
+    register_user,
+)
 from auth.utils import get_password_hash
-from exceptions.exceptions import RegistrationFailed
+from exceptions.exceptions import AuthenticationFailed, RegistrationFailed
 
 
 async def setup(testing_data: dict, async_session: AsyncSession) -> None:
@@ -168,3 +174,48 @@ async def test_authenticate_user_regular(testing_data, testing_session) -> None:
 
     assert isinstance(authenticated, User)
     assert authenticated.username == testing_data["username"]
+
+
+@pytest.mark.asyncio
+async def test_login_for_access_token_raises_AuthenticationFailed_for_nonexistent_user(
+    testing_session,
+) -> None:
+    invalid_user_data = OAuth2PasswordRequestForm(
+        username="not-a-user", password="weakpass"
+    )
+
+    with pytest.raises(AuthenticationFailed):
+        await login_for_access_token(invalid_user_data, testing_session)
+
+
+@pytest.mark.asyncio
+async def test_login_for_access_token_raises_AuthenticationFailed_for_incorrect_password(
+    testing_data,
+    testing_session,
+) -> None:
+    await setup(testing_data, testing_session)
+
+    incorrect_password_data = OAuth2PasswordRequestForm(
+        username=testing_data["username"], password="wrongpass"
+    )
+
+    with pytest.raises(AuthenticationFailed):
+        await login_for_access_token(incorrect_password_data, testing_session)
+
+
+@pytest.mark.asyncio
+async def test_login_for_access_token_regular(
+    testing_data,
+    testing_session,
+) -> None:
+    await setup(testing_data, testing_session)
+
+    form_data = OAuth2PasswordRequestForm(
+        username=testing_data["username"],
+        password=testing_data["password"].get_secret_value(),
+    )
+
+    token = await login_for_access_token(form_data, testing_session)
+
+    assert isinstance(token, Token)
+    assert token.token_type == "bearer"
