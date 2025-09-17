@@ -1,8 +1,9 @@
 import pytest
+from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.models import DBUser, RegisterUserRequest
-from auth.services import get_user_by_username, register_user
+from auth.models import DBUser, RegisterUserRequest, User
+from auth.services import authenticate_user, get_user_by_username, register_user
 from auth.utils import get_password_hash
 from exceptions.exceptions import RegistrationFailed
 
@@ -130,12 +131,40 @@ async def test_get_user_by_username_returns_None_for_nonexistent_user(
 
 
 @pytest.mark.asyncio
-async def test_get_user_by_username_regular(
-    testing_data, testing_session
-) -> None:
+async def test_get_user_by_username_regular(testing_data, testing_session) -> None:
     await setup(testing_data, testing_session)
 
     user = await get_user_by_username(testing_data["username"], testing_session)
 
     assert isinstance(user, DBUser)
     assert user.username == testing_data["username"]
+
+
+@pytest.mark.asyncio
+async def test_authenticate_user_returns_None_for_nonexistent_user(
+    testing_session,
+) -> None:
+    authenticated = await authenticate_user("not a user", "weakpass", testing_session)
+    assert authenticated is None
+
+
+@pytest.mark.asyncio
+async def test_authenticate_user_returns_None_for_incorrect_password(
+    testing_data, testing_session
+) -> None:
+    await setup(testing_data, testing_session)
+    authenticated = await authenticate_user(
+        testing_data["username"], SecretStr("wrongpass"), testing_session
+    )
+    assert authenticated is None
+
+
+@pytest.mark.asyncio
+async def test_authenticate_user_regular(testing_data, testing_session) -> None:
+    await setup(testing_data, testing_session)
+    authenticated = await authenticate_user(
+        testing_data["username"], testing_data["password"], testing_session
+    )
+
+    assert isinstance(authenticated, User)
+    assert authenticated.username == testing_data["username"]
