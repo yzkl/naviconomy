@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from auth.models import DBUser, RegisterUserRequest
-from auth.services import register_user
+from auth.services import get_user_by_username, register_user
 from auth.utils import get_password_hash
 from exceptions.exceptions import RegistrationFailed
 
@@ -118,3 +118,24 @@ async def test_register_user_regular(testing_data, testing_session) -> None:
 
     assert isinstance(result, dict)
     assert testing_data["username"] in result["detail"]
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_returns_None_for_nonexistent_user(
+    testing_session,
+) -> None:
+    user = await get_user_by_username("not a user", testing_session)
+
+    assert user is None
+
+
+@pytest.mark.asyncio
+async def test_get_user_by_username_regular(
+    testing_data, testing_session
+) -> None:
+    await setup(testing_data, testing_session)
+
+    user = await get_user_by_username(testing_data["username"], testing_session)
+
+    assert isinstance(user, DBUser)
+    assert user.username == testing_data["username"]
