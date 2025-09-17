@@ -68,3 +68,27 @@ async def register_user(
             "Conflict detected during registration. Please try a different username or email."
         )
     return {"detail": f"Welcome to Naviconomy, {db_user.username}!"}
+
+
+async def get_user_by_username(username: str, session: AsyncSession) -> DBUser | None:
+    """Fetch a user from the database by their username.
+
+    Returns a `DBUser` SQLAlchemy model containing the user's information if found; otherwise returns `None`.
+
+    Parameters
+    ----------
+    username : str
+        The username of the user to fetch.
+
+    session : AsyncSession
+        The asynchronous session used to fetch the user.
+
+    Returns
+    -------
+    DBUser | None
+        A SQLAlchemy model representing the user if found, otherwise `None`.
+    """
+    db_user = (
+        await session.execute(select(DBUser).where(DBUser.username == username))
+    ).scalar_one_or_none()
+    return db_user
