@@ -2,6 +2,8 @@ from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -9,6 +11,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from auth.routes import auth_router
+from database.session import get_db_session
 from models import Base
 
 # Set up test objects
@@ -23,6 +27,10 @@ TEST_DATA["register_payload"] = {
     "email": TEST_DATA["email"],
     "password": "weakpassword",
 }
+
+# Set up test app
+test_app = FastAPI()
+test_app.include_router(auth_router)
 
 
 @pytest.fixture
@@ -52,3 +60,21 @@ async def testing_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, N
     )
     async with async_session() as session:
         yield session
+
+
+@pytest_asyncio.fixture
+async def async_client(
+    testing_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient, None]:
+    async def override_get_db_session() -> AsyncGenerator[AsyncSession, None]:
+        yield testing_session
+
+    test_app.dependency_overrides[get_db_session] = override_get_db_session
+
+    async with AsyncClient(
+        transport=ASGITransport(app=test_app), base_url="https://test"
+    ) as client:
+        try:
+            yield client
+        finally:
+            test_app.dependency_overrides = {}
