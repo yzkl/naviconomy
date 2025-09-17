@@ -14,7 +14,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 
 
 async def get_current_user(
-    token: Annotated[str, Depends[oauth2_scheme]],
+    token: Annotated[str, Depends(oauth2_scheme)],
     db: AsyncSession = Depends(get_db_session),
 ) -> User:
     """Fetch the user currently authenticated via an access token.
@@ -40,7 +40,7 @@ async def get_current_user(
         If the token is invalid or expired, or if the username does not exist.
     """
     token_data = verify_token(token)
-    db_user = get_user_by_username(token_data.username, db)
+    db_user = await get_user_by_username(token_data.username, db)
     if not db_user:
         raise InvalidTokenError("Invalid credentials.")
     return User.model_validate(db_user)
