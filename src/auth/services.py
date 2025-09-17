@@ -1,13 +1,20 @@
+from datetime import timedelta
+from typing import Annotated
 from uuid import uuid4
 
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import SecretStr
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.models import DBUser, RegisterUserRequest, User
-from auth.utils import get_password_hash, verify_password
-from exceptions.exceptions import RegistrationFailed
+from auth.models import DBUser, RegisterUserRequest, Token, User
+from auth.utils import create_access_token, get_password_hash, verify_password
+from config.settings import settings
+from exceptions.exceptions import AuthenticationFailed, RegistrationFailed
+
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.access_token_expire_minutes
 
 
 async def register_user(
@@ -124,3 +131,42 @@ async def authenticate_user(
     if not verify_password(password, db_user.hashed_password):
         return None
     return User.model_validate(db_user)
+
+
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()], session: AsyncSession
+) -> Token:
+    """Authenticate a user using form data and return an access token if credentials are valid.
+
+    Returns a `Token` Pydantic model if the username exists and the password is valid.
+
+    Parameters
+    ----------
+    form_data : OAuth2PasswordRequestForm
+        A FastAPI dependenct that extracts `username` and `password` from a form. Injected via `Depends`.
+
+    session : AsyncSession
+        The asynchronous session used to query the user.
+
+    Returns
+    -------
+    Token
+        A Pydantic model containing the access token and its type.
+
+    Raises
+    ------
+    AuthenticationFailed
+        If the username or password is invalid.
+    """
+    user = await authenticate_user(
+        form_data.username, SecretStr(form_data.password), session
+    )
+
+    if not user:
+        raise AuthenticationFailed("Invalid username or password.")
+
+    access_token = create_access_token(
+        {"sub": user.username}, timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    )
+
+    return Token(access_token=access_token, token_type="bearer")
