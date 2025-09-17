@@ -123,4 +123,4 @@ async def authenticate_user(
         return None
     if not verify_password(password, db_user.hashed_password):
         return None
-    raise User.model_validate(db_user)
+    return User.model_validate(db_user)
