@@ -12,6 +12,28 @@ from exceptions.exceptions import RegistrationFailed
 async def register_user(
     register_user_request: RegisterUserRequest, session: AsyncSession
 ) -> dict:
+    """Register a new user in the database.
+
+    Returns a dictionary containing a message for the newly registered user.
+
+    Parameters
+    ----------
+    register_user_request : RegisterUserRequest
+        A pydantic model containing user's registration details (username, email, password).
+
+    session : AsyncSession
+        The asynchronous session used to persist the user.
+
+    Returns
+    -------
+    dict
+        A dictionary with a message addressed for the newly registered user.
+
+    Raises
+    ------
+    RegistrationFailed
+        When the username or email is already in use, or a commit conflict occurs.
+    """
     # First, check if the username or password input already exists
     existing_user = (
         await session.execute(
