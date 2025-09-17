@@ -1,11 +1,12 @@
 from uuid import uuid4
 
+from pydantic import SecretStr
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from auth.models import DBUser, RegisterUserRequest
-from auth.utils import get_password_hash
+from auth.models import DBUser, RegisterUserRequest, User
+from auth.utils import get_password_hash, verify_password
 from exceptions.exceptions import RegistrationFailed
 
 
@@ -92,3 +93,34 @@ async def get_user_by_username(username: str, session: AsyncSession) -> DBUser |
         await session.execute(select(DBUser).where(DBUser.username == username))
     ).scalar_one_or_none()
     return db_user
+
+
+async def authenticate_user(
+    username: str, password: SecretStr, session: AsyncSession
+) -> User | None:
+    """Authenticate a user by their username and password.
+
+    Returns `User` Pydantic model if the authentication is successful; otherwise, returns `None`.
+
+    Parameters
+    ----------
+    username : str
+        The username of the user to authenticate.
+
+    password : SecretStr
+        The secret-wrapped password to verify.
+
+    session : AsyncSession
+        The asynchronous session used to query the user.
+
+    Returns
+    -------
+    User | None
+        A Pydantic model representing the user if authentication succeeds, otherwise `None`.
+    """
+    db_user = await get_user_by_username(username, session)
+    if not db_user:
+        return None
+    if not verify_password(password, db_user.hashed_password):
+        return None
+    raise User.model_validate(db_user)
