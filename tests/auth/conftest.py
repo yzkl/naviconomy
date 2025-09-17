@@ -2,7 +2,6 @@ from typing import AsyncGenerator
 
 import pytest
 import pytest_asyncio
-from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -16,7 +15,7 @@ from models import Base
 TEST_DATA = {
     "username": "test-user",
     "email": "email@email.com",
-    "password": SecretStr("strongpassword"),
+    "password": "strongpassword",
 }
 TEST_DATA["token_payload"] = {"sub": TEST_DATA["username"]}
 TEST_DATA["register_payload"] = {

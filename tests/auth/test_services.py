@@ -18,7 +18,7 @@ async def setup(testing_data: dict, async_session: AsyncSession) -> None:
     test_user = DBUser(
         username=testing_data["username"],
         email=testing_data["email"],
-        hashed_password=get_password_hash(testing_data["password"]),
+        hashed_password=get_password_hash(SecretStr(testing_data["password"])),
     )
     async_session.add(test_user)
     await async_session.commit()
@@ -169,7 +169,7 @@ async def test_authenticate_user_returns_None_for_incorrect_password(
 async def test_authenticate_user_regular(testing_data, testing_session) -> None:
     await setup(testing_data, testing_session)
     authenticated = await authenticate_user(
-        testing_data["username"], testing_data["password"], testing_session
+        testing_data["username"], SecretStr(testing_data["password"]), testing_session
     )
 
     assert isinstance(authenticated, User)
@@ -212,7 +212,7 @@ async def test_login_for_access_token_regular(
 
     form_data = OAuth2PasswordRequestForm(
         username=testing_data["username"],
-        password=testing_data["password"].get_secret_value(),
+        password=testing_data["password"],
     )
 
     token = await login_for_access_token(form_data, testing_session)
