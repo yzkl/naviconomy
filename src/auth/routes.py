@@ -1,6 +1,5 @@
 from typing import Annotated
 
-import services
 from fastapi import APIRouter, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from loguru import logger
@@ -10,10 +9,12 @@ from auth.models import RegisterUserRequest, Token
 from core.limiter import limiter
 from database.session import get_db_session
 
-router = APIRouter(prefix="/auth")
+from . import services
+
+auth_router = APIRouter(prefix="/auth", tags=["Auth"])
 
 
-@router.post("/")
+@auth_router.post("/")
 @limiter.limit("10/hour")
 async def register_user(
     request: Request,
@@ -26,7 +27,7 @@ async def register_user(
     return result
 
 
-@router.post("/token", response_model=Token)
+@auth_router.post("/token", response_model=Token)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: AsyncSession = Depends(get_db_session),
