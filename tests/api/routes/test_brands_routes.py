@@ -46,7 +46,7 @@ async def test_read_brand_regular(
 
 
 @pytest.mark.asyncio
-async def test_read_brandsr(
+async def test_read_brands(
     testing_session: AsyncSession, async_client: AsyncClient
 ) -> None:
     # Seed test brands
