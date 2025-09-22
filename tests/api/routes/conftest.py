@@ -44,9 +44,7 @@ async def testing_session(engine: AsyncEngine) -> AsyncGenerator[AsyncSession, N
                 seq = f"{table.name}_id_seq"
                 await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
 
-    async_session = async_sessionmaker(
-        bind=engine, expire_on_commit=False, class_=AsyncSession
-    )
+    async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
     async with async_session() as session:
         yield session
 

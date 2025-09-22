@@ -4,7 +4,6 @@ import pytest_asyncio
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
-    AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
@@ -33,8 +32,6 @@ async def testing_session(engine: AsyncEngine):
                 seq = f"{table.name}_id_seq"
                 await conn.execute(text(f'ALTER SEQUENCE "{seq}" RESTART WITH 1'))
 
-    async_session = async_sessionmaker(
-        bind=engine, expire_on_commit=False, class_=AsyncSession
-    )
+    async_session = async_sessionmaker(bind=engine, expire_on_commit=False)
     async with async_session() as session:
         yield session
