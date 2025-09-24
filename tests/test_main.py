@@ -299,3 +299,53 @@ async def test_main_returns_http_404_for_reading_nonexistent_refill(
     assert response.status_code == 404
     assert "Refill" in response.text
     assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_409_for_creating_duplicate_brand(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.post(
+        URL_PREFIX + "brands/", json={"name": testing_data["brand1"]}
+    )
+    assert response.status_code == 409
+    assert "Brand already exists" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_409_for_updating_duplicate_brand(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.put(
+        URL_PREFIX + "brands/2", json={"name": testing_data["brand1"]}
+    )
+    assert response.status_code == 409
+    assert "Brand" in response.text
+    assert "already exists" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_409_for_creating_duplicate_octane(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.post(
+        URL_PREFIX + "octanes/", json={"grade": testing_data["octane1"]}
+    )
+    assert response.status_code == 409
+    assert "Octane already exists" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_409_for_updating_duplicate_octane(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.put(
+        URL_PREFIX + "octanes/2", json={"grade": testing_data["octane1"]}
+    )
+    assert response.status_code == 409
+    assert "Octane" in response.text
+    assert "already exists" in response.text
