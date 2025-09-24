@@ -3,7 +3,6 @@ from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
-from schemas import RefillCreate
 
 URL_PREFIX = "/api/v1/"
 
@@ -20,8 +19,8 @@ async def setup_dimensions(testing_data: dict, async_session: AsyncSession) -> N
 async def setup_facts(testing_data: dict, async_session: AsyncSession) -> None:
     await setup_dimensions(testing_data, async_session)
 
-    test_refill_1 = models.Refill(RefillCreate(testing_data["refill1"]))
-    test_refill_2 = models.Refill(RefillCreate(testing_data["refill2"]))
+    test_refill_1 = models.Refill(**testing_data["refill1"])
+    test_refill_2 = models.Refill(**testing_data["refill2"])
 
     async_session.add_all([test_refill_1, test_refill_2])
     await async_session.commit()
@@ -119,4 +118,53 @@ async def test_delete_octane_returns_http_200(
 ) -> None:
     await setup_dimensions(testing_data, testing_session)
     response = await async_client.delete(URL_PREFIX + "octanes/1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_create_refill_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.post(
+        URL_PREFIX + "refills/", json=testing_data["refill1"]
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_refill_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_facts(testing_data, testing_session)
+    response = await async_client.get(URL_PREFIX + "refills/1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_refills_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.get(URL_PREFIX + "refills/")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_update_refill_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_facts(testing_data, testing_session)
+    response = await async_client.put(
+        URL_PREFIX + "refills/1", json={"odometer": 124.6}
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_delete_refill_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_facts(testing_data, testing_session)
+    response = await async_client.delete(URL_PREFIX + "refills/1")
     assert response.status_code == 200
