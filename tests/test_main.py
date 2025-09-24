@@ -35,11 +35,9 @@ async def test_read_root_returns_http_200(async_client: AsyncClient) -> None:
 
 
 @pytest.mark.asyncio
-async def test_create_brand_returns_http_200(
-    testing_data: dict, async_client: AsyncClient
-) -> None:
+async def test_create_brand_returns_http_200(async_client: AsyncClient) -> None:
     response = await async_client.post(
-        URL_PREFIX + "brands/", json={"name": testing_data["brand1"]}
+        URL_PREFIX + "brands/", json={"name": "new-brand"}
     )
     assert response.status_code == 200
 
@@ -79,4 +77,46 @@ async def test_delete_brand_returns_http_200(
 ) -> None:
     await setup_dimensions(testing_data, testing_session)
     response = await async_client.delete(URL_PREFIX + "brands/1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_create_octane_returns_http_200(async_client: AsyncClient) -> None:
+    response = await async_client.post(URL_PREFIX + "octanes/", json={"grade": 96})
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_octane_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.get(URL_PREFIX + "octanes/1")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_read_octanes_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.get(URL_PREFIX + "octanes/")
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_update_octane_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.put(URL_PREFIX + "octanes/1", json={"grade": 96})
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
+async def test_delete_octane_returns_http_200(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.delete(URL_PREFIX + "octanes/1")
     assert response.status_code == 200
