@@ -269,3 +269,33 @@ async def test_main_returns_http_403_for_deactivated_user(
 
         assert response.status_code == 403
         assert "Account has been disabled" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_reading_nonexistent_brand(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.get(URL_PREFIX + "brands/1000")
+    assert response.status_code == 404
+    assert "Brand" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_reading_nonexistent_octane(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.get(URL_PREFIX + "octanes/1000")
+    assert response.status_code == 404
+    assert "Octane" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_reading_nonexistent_refill(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.get(URL_PREFIX + "refills/1000")
+    assert response.status_code == 404
+    assert "Refill" in response.text
+    assert "does not exist" in response.text
