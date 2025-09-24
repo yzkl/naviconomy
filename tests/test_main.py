@@ -349,3 +349,29 @@ async def test_main_returns_http_409_for_updating_duplicate_octane(
     assert response.status_code == 409
     assert "Octane" in response.text
     assert "already exists" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_422_for_creating_refill_with_nonexistent_brand(
+    testing_data: dict, async_client: AsyncClient
+) -> None:
+    payload = testing_data["refill1"]
+    payload.pop("id")
+    response = await async_client.post(URL_PREFIX + "refills/", json=payload)
+    assert response.status_code == 422
+    assert "Brand" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_422_for_creating_refill_with_nonexistent_octane(
+    testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
+) -> None:
+    payload = testing_data["refill1"]
+    payload.pop("id")
+    payload["octane_id"] = 1000
+    await setup_dimensions(testing_data, testing_session)
+    response = await async_client.post(URL_PREFIX + "refills/", json=payload)
+    assert response.status_code == 422
+    assert "Octane" in response.text
+    assert "does not exist" in response.text
