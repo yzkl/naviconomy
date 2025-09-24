@@ -45,7 +45,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 app.include_router(
-    base_router, prefix=API_PREFIX, dependencies=Depends(get_current_active_user)
+    base_router, prefix=API_PREFIX, dependencies=[Depends(get_current_active_user)]
 )
 app.include_router(auth_router, prefix=API_PREFIX)
 
