@@ -54,8 +54,14 @@ async def update_refill(id: int, params: RefillUpdate, session: AsyncSession) ->
     for attr, value in params.model_dump(exclude_unset=True).items():
         setattr(db_refill, attr, value)
     session.add(db_refill)
-    await session.commit()
-    await session.refresh(db_refill)
+    try:
+        await session.commit()
+        await session.refresh(db_refill)
+    except IntegrityError as e:
+        if "brand" in str(e.orig):
+            raise RelatedEntityDoesNotExistError("Brand with this id does not exist.")
+        elif "octane" in str(e.orig):
+            raise RelatedEntityDoesNotExistError("Octane with this id does not exist.")
     return Refill.model_validate(db_refill)
 
 
