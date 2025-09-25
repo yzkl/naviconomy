@@ -370,6 +370,36 @@ async def test_update_refill_raises_ValidationError(
 
 
 @pytest.mark.asyncio
+async def test_update_refill_raises_RelatedEntityDoesNotExistError_for_nonexistent_brand(
+    testing_session: AsyncSession,
+) -> None:
+    await setup(testing_session)
+
+    with pytest.raises(RelatedEntityDoesNotExistError):
+        await refills.update_refill(
+            2,
+            RefillUpdate(odometer=789, brand_id=1000, ethanol_percent=0.05),
+            testing_session,
+        )
+
+
+@pytest.mark.asyncio
+async def test_update_refill_raises_RelatedEntityDoesNotExistError_for_nonexistent_octane(
+    testing_session: AsyncSession,
+) -> None:
+    await setup(testing_session)
+
+    with pytest.raises(RelatedEntityDoesNotExistError):
+        await refills.update_refill(
+            2,
+            RefillUpdate(
+                odometer=789, brand_id=1, octane_id=1000, ethanol_percent=0.05
+            ),
+            testing_session,
+        )
+
+
+@pytest.mark.asyncio
 async def test_update_refill_regular(
     testing_session: AsyncSession,
 ) -> None:
