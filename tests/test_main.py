@@ -6,9 +6,10 @@ from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import models
-from auth.models import DBUser
+from auth.dependencies import get_current_active_user
+from auth.models import DBUser, User
 from auth.utils import create_access_token, get_password_hash
-from database.session import get_db_session
+from database.session import DatabaseSessionManager, get_db_session
 from main import app
 
 URL_PREFIX = "/api/v1/"
@@ -463,3 +464,32 @@ async def test_main_returns_http_422_for_updating_refill_with_nonexistent_octane
     assert response.status_code == 422
     assert "Octane" in response.text
     assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_500(testing_data: dict) -> None:
+    async def override_db():
+        DATABASE_URL = (
+            "postgresql+asyncpg://postgres:strongpassword@localhost:5431/postgres"
+        )
+        sessionmanager = DatabaseSessionManager(DATABASE_URL)
+        sessionmanager._sessionmaker = None  # Induce a server error
+        async with sessionmanager.session() as session:
+            yield session
+
+    async def override_user():
+        yield User(
+            username=testing_data["user"]["username"],
+            email=testing_data["user"]["email"],
+            is_active=True,
+        )
+
+    app.dependency_overrides[get_db_session] = override_db
+    app.dependency_overrides[get_current_active_user] = override_user
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as client:
+        response = await client.get(URL_PREFIX + "refills/1")
+        assert response.status_code == 500
+        assert "Service is unavailable" in response.text
