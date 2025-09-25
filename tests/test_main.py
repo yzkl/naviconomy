@@ -282,6 +282,26 @@ async def test_main_returns_http_404_for_reading_nonexistent_brand(
 
 
 @pytest.mark.asyncio
+async def test_main_returns_http_404_for_updating_nonexistent_brand(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "brands/1000", json={"name": "new"})
+    assert response.status_code == 404
+    assert "Brand" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_deleting_nonexistent_brand(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.delete(URL_PREFIX + "brands/1000")
+    assert response.status_code == 404
+    assert "Brand" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
 async def test_main_returns_http_404_for_reading_nonexistent_octane(
     async_client: AsyncClient,
 ) -> None:
@@ -292,10 +312,50 @@ async def test_main_returns_http_404_for_reading_nonexistent_octane(
 
 
 @pytest.mark.asyncio
+async def test_main_returns_http_404_for_updating_nonexistent_octane(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "octanes/1000", json={"grade": 99})
+    assert response.status_code == 404
+    assert "Octane" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_deleting_nonexistent_octane(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.delete(URL_PREFIX + "octanes/1000")
+    assert response.status_code == 404
+    assert "Octane" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
 async def test_main_returns_http_404_for_reading_nonexistent_refill(
     async_client: AsyncClient,
 ) -> None:
     response = await async_client.get(URL_PREFIX + "refills/1000")
+    assert response.status_code == 404
+    assert "Refill" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_updating_nonexistent_refill(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.put(URL_PREFIX + "refills/1000", json={"grade": 99})
+    assert response.status_code == 404
+    assert "Refill" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_404_for_deleting_nonexistent_refill(
+    async_client: AsyncClient,
+) -> None:
+    response = await async_client.delete(URL_PREFIX + "refills/1000")
     assert response.status_code == 404
     assert "Refill" in response.text
     assert "does not exist" in response.text
