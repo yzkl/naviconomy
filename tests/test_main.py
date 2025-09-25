@@ -355,7 +355,7 @@ async def test_main_returns_http_409_for_updating_duplicate_octane(
 async def test_main_returns_http_422_for_creating_refill_with_nonexistent_brand(
     testing_data: dict, async_client: AsyncClient
 ) -> None:
-    payload = testing_data["refill1"]
+    payload = testing_data["refill1"].copy()
     payload.pop("id")
     response = await async_client.post(URL_PREFIX + "refills/", json=payload)
     assert response.status_code == 422
@@ -367,11 +367,39 @@ async def test_main_returns_http_422_for_creating_refill_with_nonexistent_brand(
 async def test_main_returns_http_422_for_creating_refill_with_nonexistent_octane(
     testing_data: dict, testing_session: AsyncSession, async_client: AsyncClient
 ) -> None:
-    payload = testing_data["refill1"]
+    payload = testing_data["refill1"].copy()
     payload.pop("id")
     payload["octane_id"] = 1000
     await setup_dimensions(testing_data, testing_session)
     response = await async_client.post(URL_PREFIX + "refills/", json=payload)
+    assert response.status_code == 422
+    assert "Octane" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_422_for_updating_refill_with_nonexistent_brand(
+    testing_data: dict,
+    testing_session: AsyncSession,
+    async_client: AsyncClient,
+) -> None:
+    await setup_facts(testing_data, testing_session)
+    response = await async_client.put(URL_PREFIX + "refills/1", json={"brand_id": 1000})
+    assert response.status_code == 422
+    assert "Brand" in response.text
+    assert "does not exist" in response.text
+
+
+@pytest.mark.asyncio
+async def test_main_returns_http_422_for_updating_refill_with_nonexistent_octane(
+    testing_data: dict,
+    testing_session: AsyncSession,
+    async_client: AsyncClient,
+) -> None:
+    await setup_facts(testing_data, testing_session)
+    response = await async_client.put(
+        URL_PREFIX + "refills/1", json={"octane_id": 1000}
+    )
     assert response.status_code == 422
     assert "Octane" in response.text
     assert "does not exist" in response.text
